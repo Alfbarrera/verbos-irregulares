@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Verbos Irregulares</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fef9f0;--card:#fff;--ink:#1a1a2e;--soft:#f0ebe0;--border:#e0d8cc;
+  --accent:#e8552a;--blue:#2a7de8;--muted:#9a9080;
+  --ok:#27ae60;--bad:#e8552a;--warn:#e8a02a;--purple:#9b59b6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:-webkit-fill-available;}
+html,body{overflow:hidden;}
+body{
+  background:var(--bg);font-family:'Nunito',sans-serif;color:var(--ink);
+  height:100vh;height:-webkit-fill-available;
+  display:flex;flex-direction:column;align-items:center;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:radial-gradient(circle,#d0c8b8 1px,transparent 1px);
+  background-size:28px 28px;opacity:.28;pointer-events:none;z-index:0;
+}
+.screen{
+  width:100%;max-width:600px;
+  height:100vh;height:-webkit-fill-available;
+  display:none;flex-direction:column;
+  position:relative;z-index:1;
+  padding-top:max(env(safe-area-inset-top),10px);
+  padding-bottom:max(env(safe-area-inset-bottom),8px);
+  padding-left:14px;padding-right:14px;
+}
+.screen.active{display:flex;}
+
+/* ── HEADER ── */
+.top-header{text-align:center;flex-shrink:0;margin-bottom:8px;}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-family:'Courier Prime',monospace;font-size:.56rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:3px 10px;border-radius:3px;margin-bottom:5px;}
+h1{font-size:clamp(1.2rem,4.5vw,1.9rem);font-weight:900;letter-spacing:-1px;line-height:1;}
+h1 span{color:var(--accent);}
+.subtitle{font-family:'Courier Prime',monospace;font-size:.63rem;color:var(--muted);margin-top:2px;}
+
+/* ── SCROLLABLE CONTENT ── */
+.scroll-area{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding-bottom:4px;}
+
+/* ── GROUP SELECTOR ── */
+.group-card{
+  background:var(--card);border:2px solid var(--border);border-radius:10px;
+  padding:10px 12px;transition:border-color .12s,box-shadow .12s;
+  user-select:none;
+}
+.group-card.selected{border-color:var(--blue);background:#f0f6ff;box-shadow:3px 3px 0 var(--blue);}
+.gc-top{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.gc-check{
+  width:22px;height:22px;border-radius:5px;border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  font-size:.8rem;transition:all .12s;background:#fff;
+}
+.group-card.selected .gc-check{background:var(--blue);border-color:var(--blue);color:#fff;}
+.gc-info{flex:1;}
+.gc-name{font-size:.88rem;font-weight:900;color:var(--ink);}
+.gc-verbs{font-family:'Courier Prime',monospace;font-size:.55rem;color:var(--muted);margin-top:1px;line-height:1.4;}
+.gc-count{font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--muted);flex-shrink:0;}
+
+/* complete/random toggle — only visible when selected */
+.gc-toggle{
+  display:none;margin-top:8px;margin-left:32px;
+  gap:6px;
+}
+.group-card.selected .gc-toggle{display:flex;}
+.toggle-btn{
+  flex:1;padding:5px 8px;border-radius:6px;border:1.5px solid var(--border);
+  background:#fff;font-family:'Nunito',sans-serif;font-size:.72rem;font-weight:700;
+  color:var(--muted);cursor:pointer;transition:all .12s;text-align:center;
+}
+.toggle-btn.active-complete{border-color:var(--ok);background:#eafaf1;color:var(--ok);}
+.toggle-btn.active-random{border-color:var(--purple);background:#f5eeff;color:var(--purple);}
+
+.sel-actions{flex-shrink:0;display:flex;gap:8px;margin-top:2px;}
+.sel-all-btn{flex:1;padding:8px;background:var(--soft);color:var(--ink);border:2px solid var(--border);border-radius:8px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;transition:all .12s;}
+.sel-all-btn:hover{border-color:var(--ink);}
+.continue-btn{flex:2;padding:8px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-weight:900;font-size:.85rem;cursor:pointer;box-shadow:3px 3px 0 #9a9080;transition:all .12s;}
+.continue-btn:hover{transform:translateY(-1px);box-shadow:3px 5px 0 #9a9080;}
+.continue-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none;}
+.sel-summary{font-family:'Courier Prime',monospace;font-size:.62rem;color:var(--muted);text-align:center;flex-shrink:0;}
+
+/* ── LEVEL SELECTOR ── */
+.level-cards{display:flex;flex-direction:column;gap:10px;}
+.lv-card{
+  background:var(--card);border:2.5px solid var(--ink);border-radius:12px;
+  box-shadow:4px 4px 0 var(--ink);padding:14px 16px;cursor:pointer;transition:all .12s;
+  display:flex;align-items:center;gap:12px;
+}
+.lv-card:hover{transform:translateY(-2px);box-shadow:4px 6px 0 var(--ink);}
+.lv-emoji{font-size:1.6rem;flex-shrink:0;}
+.lv-name{font-size:.95rem;font-weight:900;letter-spacing:-.5px;}
+.lv-desc{font-family:'Courier Prime',monospace;font-size:.62rem;color:var(--muted);margin-top:2px;line-height:1.4;}
+.lv-badge{margin-left:auto;flex-shrink:0;font-family:'Courier Prime',monospace;font-size:.52rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;border-radius:20px;border:1.5px solid;}
+.lv1 .lv-name{color:var(--blue);}.lv1 .lv-badge{border-color:var(--blue);color:var(--blue);}
+.lv2 .lv-name{color:var(--purple);}.lv2 .lv-badge{border-color:var(--purple);color:var(--purple);}
+.lv3 .lv-name{color:var(--accent);}.lv3 .lv-badge{border-color:var(--accent);color:var(--accent);}
+.back-lnk{font-family:'Courier Prime',monospace;font-size:.65rem;color:var(--muted);cursor:pointer;text-decoration:underline;text-align:center;flex-shrink:0;}
+.back-lnk:hover{color:var(--ink);}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-shrink:0;margin-bottom:5px;}
+.score-lbl{font-family:'Courier Prime',monospace;font-size:.75rem;color:var(--muted);}
+.score-lbl strong{color:var(--ink);font-size:.9rem;}
+.level-pill{font-family:'Courier Prime',monospace;font-size:.56rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 9px;border-radius:20px;border:1.5px solid;}
+.lp-1{border-color:var(--blue);color:var(--blue);}
+.lp-2{border-color:var(--purple);color:var(--purple);}
+.lp-3{border-color:var(--accent);color:var(--accent);}
+
+/* ── PROGRESS ── */
+.prog-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-bottom:8px;}
+.prog-bar{flex:1;height:6px;background:var(--border);border-radius:10px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),#f0802a);border-radius:10px;transition:width .4s;}
+.prog-lbl{font-family:'Courier Prime',monospace;font-size:.62rem;color:var(--muted);white-space:nowrap;}
+
+/* ── VERB CARD ── */
+.verb-card{background:var(--card);border:2.5px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 var(--ink);flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.verb-strip{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:2px dashed var(--border);flex-shrink:0;}
+.verb-tag{font-family:'Courier Prime',monospace;font-size:.53rem;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.verb-word{font-size:clamp(1.5rem,5.5vw,2.2rem);font-weight:900;letter-spacing:-1.5px;line-height:1.05;}
+.verb-num{font-family:'Courier Prime',monospace;font-size:.58rem;color:var(--muted);margin-top:1px;}
+.step-pills{display:flex;gap:5px;}
+.sp{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:900;color:var(--muted);background:var(--soft);transition:all .2s;}
+.sp.active{border-color:var(--blue);background:var(--blue);color:#fff;}
+.sp.s-ok{border-color:var(--ok);background:var(--ok);color:#fff;}
+.sp.s-bad{border-color:var(--bad);background:var(--bad);color:#fff;}
+.sp.s-gift{border-color:var(--purple);background:var(--purple);color:#fff;}
+.q-area{flex:1;min-height:0;overflow-y:auto;padding:8px 12px 6px;display:flex;flex-direction:column;gap:8px;}
+
+/* ── QUESTION BLOCK ── */
+.qblock{display:flex;flex-direction:column;gap:4px;}
+.qlabel{display:flex;align-items:center;gap:6px;}
+.qicon{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.58rem;font-weight:900;color:#fff;flex-shrink:0;}
+.qicon.m{background:var(--purple)}.qicon.p{background:var(--blue)}.qicon.r{background:var(--accent)}
+.qtitle{font-size:.78rem;font-weight:900;}
+.qsub{font-family:'Courier Prime',monospace;font-size:.58rem;color:var(--muted);margin-left:25px;}
+.retry-msg{font-family:'Courier Prime',monospace;font-size:.62rem;font-weight:700;color:var(--warn);margin-left:25px;display:none;}
+.retry-msg.show{display:block;}
+.qdiv{height:1px;background:var(--border);flex-shrink:0;}
+.qblock.locked .qtitle{color:var(--muted);}
+
+/* test opts */
+.opts{display:flex;gap:5px;flex-wrap:wrap;}
+.opt{flex:1;min-width:70px;display:flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--border);border-radius:7px;padding:6px 9px;cursor:pointer;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:700;color:var(--ink);transition:all .12s;}
+.opt:hover:not(:disabled){border-color:var(--ink);background:#fffbf5;transform:translateY(-1px);box-shadow:2px 2px 0 var(--ink);}
+.opt:disabled{cursor:default;}
+.opt-ltr{width:19px;height:19px;border-radius:4px;background:var(--soft);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Courier Prime',monospace;font-size:.58rem;font-weight:700;flex-shrink:0;transition:all .12s;}
+.opt.ok-opt{border-color:var(--ok);background:#eafaf1;}.opt.ok-opt .opt-ltr{background:var(--ok);border-color:var(--ok);color:#fff;}
+.opt.bad-opt{border-color:var(--bad);background:#fdf0ed;}.opt.bad-opt .opt-ltr{background:var(--bad);border-color:var(--bad);color:#fff;}
+.opt.dim{opacity:.3;}
+.qblock.locked .opts{opacity:.32;pointer-events:none;}
+
+/* gift */
+.gift-box{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#f8f0ff,#efe0ff);border:2px solid var(--purple);border-radius:8px;padding:8px 12px;}
+.gift-label{font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--purple);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.gift-value{font-size:.95rem;font-weight:900;color:var(--purple);}
+
+/* fill-in */
+.fill-row{display:flex;flex-direction:column;gap:5px;margin-left:25px;}
+.fill-input-wrap{display:flex;align-items:center;gap:6px;}
+.fill-input{flex:1;font-family:'Courier Prime',monospace;font-size:.9rem;font-weight:700;border:2px solid var(--border);border-radius:7px;padding:7px 10px;background:#fff;color:var(--ink);outline:none;transition:border-color .15s;}
+.fill-input:focus{border-color:var(--blue);}
+.fill-input:disabled{cursor:default;background:var(--soft);}
+.fill-input.inp-ok{border-color:var(--ok);background:#eafaf1;color:var(--ok);}
+.fill-input.inp-bad{border-color:var(--bad);background:#fdf0ed;color:var(--bad);}
+.check-btn{flex-shrink:0;padding:7px 12px;background:var(--ink);color:#fff;border:none;border-radius:7px;font-family:'Nunito',sans-serif;font-weight:900;font-size:.78rem;cursor:pointer;transition:all .12s;}
+.check-btn:hover{background:#2d2d4e;}.check-btn:disabled{opacity:.4;cursor:default;}
+.mic-btn{flex-shrink:0;width:34px;height:34px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:1rem;padding:0;}
+.mic-btn:hover:not(:disabled){border-color:var(--blue);background:#f0f6ff;}
+.mic-btn.mic-active{border-color:var(--bad);background:#fdf0ed;animation:pulse .6s infinite;}
+.mic-btn:disabled{opacity:.4;cursor:default;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12);}}
+.inp-feedback{font-family:'Courier Prime',monospace;font-size:.62rem;font-weight:700;display:none;}
+.inp-feedback.show{display:block;}.inp-feedback.fb-ok{color:var(--ok);}.inp-feedback.fb-bad{color:var(--bad);}
+
+/* next btn */
+.next-btn{flex-shrink:0;margin:6px 12px 8px;padding:10px;background:var(--ink);color:#fff;border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;box-shadow:3px 3px 0 #9a9080;transition:all .12s;display:none;}
+.next-btn:hover{transform:translateY(-2px);box-shadow:3px 5px 0 #9a9080;}
+.next-btn.show{display:block;}
+.skip-btn{flex-shrink:0;margin:0 12px 8px;padding:6px;background:transparent;color:var(--muted);border:1.5px solid var(--border);border-radius:8px;font-family:'Nunito',sans-serif;font-weight:700;font-size:.72rem;cursor:pointer;transition:all .12s;}
+.skip-btn:hover{border-color:var(--bad);color:var(--bad);}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes popin{0%{transform:scale(1)}40%{transform:scale(1.02)}100%{transform:scale(1)}}
+.shake{animation:shake .28s ease;}.pop{animation:popin .22s ease;}
+
+/* ── RESULTS ── */
+#screenResult{gap:8px;}
+.res-header{flex-shrink:0;background:var(--card);border:2.5px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 var(--ink);padding:11px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.trophy{font-size:1.9rem;line-height:1;}
+.res-text{flex:1;min-width:90px;}
+.res-title{font-size:1rem;font-weight:900;letter-spacing:-.5px;}
+.res-sub{font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--muted);}
+.res-circles{display:flex;gap:6px;}
+.rc{width:46px;height:46px;border-radius:50%;border:2.5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.rc-g{border-color:var(--ok)}.rc-r{border-color:var(--bad)}.rc-b{border-color:var(--blue)}
+.rc-n{font-size:.95rem;font-weight:900;line-height:1;}
+.rc-g .rc-n{color:var(--ok)}.rc-r .rc-n{color:var(--bad)}.rc-b .rc-n{color:var(--blue)}
+.rc-l{font-family:'Courier Prime',monospace;font-size:.38rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.sum-card{flex:1;min-height:0;background:var(--card);border:2.5px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column;}
+.sum-scroll{flex:1;overflow-y:auto;min-height:0;}
+table.sum{width:100%;border-collapse:collapse;}
+table.sum thead tr{background:var(--ink);position:sticky;top:0;z-index:2;}
+table.sum th{padding:6px 8px;font-family:'Courier Prime',monospace;font-size:.48rem;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7);text-align:left;font-weight:700;}
+table.sum td{padding:5px 8px;border-bottom:1px solid var(--border);font-weight:700;font-size:.7rem;vertical-align:middle;}
+table.sum tbody tr:last-child td{border-bottom:none;}
+table.sum tbody tr:nth-child(even){background:#fdf8f2;}
+table.sum tbody tr:hover{background:#fdf0e8;}
+.sv{font-size:.82rem;font-weight:900;color:var(--ink);}
+.sg{font-family:'Courier Prime',monospace;font-size:.58rem;color:var(--muted);font-weight:400;}
+.s-ok{color:var(--ok);font-family:'Courier Prime',monospace;font-size:.68rem;}
+.s-bad{color:var(--bad);font-family:'Courier Prime',monospace;font-size:.68rem;}
+.s-gift{color:var(--purple);font-family:'Courier Prime',monospace;font-size:.68rem;}
+.result-btns{flex-shrink:0;display:flex;gap:8px;}
+.restart-btn{flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;box-shadow:4px 4px 0 var(--ink);transition:all .12s;}
+.restart-btn:hover{transform:translateY(-2px);box-shadow:4px 6px 0 var(--ink);}
+.back-btn{padding:10px 14px;background:var(--soft);color:var(--ink);border:2px solid var(--ink);border-radius:8px;font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;box-shadow:4px 4px 0 var(--ink);transition:all .12s;}
+.back-btn:hover{transform:translateY(-2px);box-shadow:4px 6px 0 var(--ink);}
+
+.deco{position:fixed;pointer-events:none;z-index:200;font-size:1.2rem;animation:fall .85s ease forwards;opacity:0;}
+@keyframes fall{0%{transform:translateY(-15px) rotate(0);opacity:1}100%{transform:translateY(80px) rotate(360deg);opacity:0}}
+</style>
+</head>
+<body>
+
+<!-- ═══ GROUP SELECTOR ═══ -->
+<div class="screen active" id="screenGroup">
+  <div class="top-header">
+    <div class="badge">Selecciona grupos</div>
+    <h1>Verbos <span>Irregulares</span></h1>
+    <p class="subtitle">Elige uno o varios grupos para practicar</p>
+  </div>
+  <div class="scroll-area" id="groupList"></div>
+  <div class="sel-summary" id="selSummary">Ningún grupo seleccionado</div>
+  <div class="sel-actions">
+    <button class="sel-all-btn" onclick="toggleAll()">Seleccionar todos</button>
+    <button class="continue-btn" id="continueBtn" onclick="goToLevel()" disabled>Continuar →</button>
+  </div>
+</div>
+
+<!-- ═══ COUNT SELECTOR ═══ -->
+<div class="screen" id="screenCount">
+  <div class="top-header">
+    <div class="badge">¿Cuántos verbos?</div>
+    <h1>Verbos <span>Irregulares</span></h1>
+    <p class="subtitle" id="countSubtitle"></p>
+  </div>
+  <div class="level-cards" id="countCards"></div>
+  <div class="back-lnk" onclick="showScreen('screenGroup')" style="margin-top:12px;">← Cambiar grupos</div>
+</div>
+
+<!-- ═══ LEVEL SELECTOR ═══ -->
+<div class="screen" id="screenLevel">
+  <div class="top-header">
+    <div class="badge">Elige tu nivel</div>
+    <h1>Verbos <span>Irregulares</span></h1>
+  </div>
+  <div class="level-cards">
+    <div class="lv-card lv1" onclick="startGame(1)">
+      <span class="lv-emoji">🎯</span>
+      <div class="lv-text">
+        <div class="lv-name">Nivel 1 — Test</div>
+        <div class="lv-desc">Elige entre 3 opciones. Tienes un intento extra si fallas.</div>
+      </div>
+      <span class="lv-badge">Fácil</span>
+    </div>
+    <div class="lv-card lv2" onclick="startGame(2)">
+      <span class="lv-emoji">✏️</span>
+      <div class="lv-text">
+        <div class="lv-name">Nivel 2 — Con pistas</div>
+        <div class="lv-desc">Escribe tú mismo. Pistas en el campo y una forma ya resuelta.</div>
+      </div>
+      <span class="lv-badge">Medio</span>
+    </div>
+    <div class="lv-card lv3" onclick="startGame(3)">
+      <span class="lv-emoji">🔥</span>
+      <div class="lv-text">
+        <div class="lv-name">Nivel 3 — Sin ayuda</div>
+        <div class="lv-desc">Rellena las tres formas solo, sin ninguna pista.</div>
+      </div>
+      <span class="lv-badge">Difícil</span>
+    </div>
+  </div>
+  <div class="back-lnk" onclick="showScreen('screenCount')" style="margin-top:12px;">← Cambiar cantidad</div>
+</div>
+
+<!-- ═══ GAME SCREEN ═══ -->
+<div class="screen" id="screenGame">
+  <div class="top-header">
+    <div class="badge" id="gameBadge">Nivel 1</div>
+    <h1>Verbos <span>Irregulares</span></h1>
+  </div>
+  <div class="topbar">
+    <span class="level-pill" id="levelPill">Nivel 1</span>
+    <div class="score-lbl">Puntos: <strong id="scoreDisplay">0</strong></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-lbl" id="progLbl">0 / 0</div>
+  </div>
+  <div class="verb-card">
+    <div class="verb-strip">
+      <div>
+        <div class="verb-tag">📖 verbo en inglés</div>
+        <div class="verb-word" id="verbWord">—</div>
+        <div class="verb-num" id="verbNum">Verbo 1 de 1</div>
+      </div>
+      <div class="step-pills">
+        <div class="sp active" id="sp0">?</div>
+        <div class="sp" id="sp1">1</div>
+        <div class="sp" id="sp2">2</div>
+      </div>
+    </div>
+    <div class="q-area" id="qArea"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextVerb()">Siguiente verbo →</button>
+    <button class="skip-btn" id="skipBtn" onclick="skipVerb()">Saltar verbo →</button>
+  </div>
+</div>
+
+<!-- ═══ RESULTS ═══ -->
+<div class="screen" id="screenResult">
+  <div class="res-header">
+    <span class="trophy" id="trophy">🏆</span>
+    <div class="res-text">
+      <div class="res-title" id="resTitle">¡Enhorabuena!</div>
+      <div class="res-sub" id="resSub">100% de aciertos</div>
+    </div>
+    <div class="res-circles">
+      <div class="rc rc-g"><div class="rc-n" id="rcOk">0</div><div class="rc-l">Bien</div></div>
+      <div class="rc rc-r"><div class="rc-n" id="rcBad">0</div><div class="rc-l">Mal</div></div>
+      <div class="rc rc-b"><div class="rc-n" id="rcPts">0</div><div class="rc-l">Pts</div></div>
+    </div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-scroll">
+      <table class="sum">
+        <thead><tr><th>Verbo</th><th>Significado</th><th>Pasado</th><th>Participio</th></tr></thead>
+        <tbody id="sumBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="result-btns">
+    <button class="back-btn" onclick="showScreen('screenGroup')">← Grupos</button>
+    <button class="restart-btn" onclick="startGame(currentLevel)">↺ Repetir</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  VERB DATA  — {inf, es, past, part, esW, pastW, partW}
+//  index 0 of esW/pastW/partW = first wrong option
+// ══════════════════════════════════════════════════════
+const GROUPS = [
+{
+  name:"Grupo 1 · Be → Buy",
+  verbs:[
+    {inf:"be",    es:"ser / estar",          past:"was / were", part:"been",
+     esW:["tener / haber","ir / venir"],     pastW:["beed","wased"],        partW:["beed","being"]},
+    {inf:"beat",  es:"golpear / ganar",       past:"beat",       part:"beaten",
+     esW:["morder / herir","romper / partir"],pastW:["beated","bote"],      partW:["beated","beet"]},
+    {inf:"become",es:"llegar a ser / volverse",past:"became",    part:"become",
+     esW:["volver / regresar","parecer / verse"],pastW:["becomed","becamed"],partW:["becomed","becomen"]},
+    {inf:"begin", es:"empezar / comenzar",    past:"began",      part:"begun",
+     esW:["terminar / acabar","continuar / seguir"],pastW:["beginned","begined"],partW:["beginned","beganned"]},
+    {inf:"bite",  es:"morder",                past:"bit",        part:"bitten",
+     esW:["golpear / pegar","arañar / rasgar"],pastW:["bited","bot"],       partW:["bited","bitted"]},
+    {inf:"blow",  es:"soplar",                past:"blew",       part:"blown",
+     esW:["fluir / correr","respirar / exhalar"],pastW:["blowed","blawn"],   partW:["blowed","blawn"]},
+    {inf:"break", es:"romper",                past:"broke",      part:"broken",
+     esW:["doblar / torcer","cortar / dividir"],pastW:["breaked","broked"], partW:["breaked","broked"]},
+    {inf:"bring", es:"traer / llevar",        past:"brought",    part:"brought",
+     esW:["enviar / mandar","coger / tomar"], pastW:["bringed","brung"],    partW:["bringed","brung"]},
+    {inf:"burn",  es:"quemar / arder",        past:"burnt",      part:"burnt",
+     esW:["hervir / calentar","fundir / derretir"],pastW:["burned","burnd"],partW:["burned","burnd"]},
+    {inf:"build", es:"construir / edificar",  past:"built",      part:"built",
+     esW:["diseñar / planear","reparar / arreglar"],pastW:["builded","bilt"],partW:["builded","bilt"]},
+    {inf:"buy",   es:"comprar",               past:"bought",     part:"bought",
+     esW:["vender / cobrar","pagar / abonar"],pastW:["buyed","boughted"],   partW:["buyed","boughted"]},
+  ]
+},
+{
+  name:"Grupo 2 · Can → Drive",
+  verbs:[
+    {inf:"can",   es:"poder",                 past:"could",      part:"—",
+     esW:["saber / conocer","deber / tener que"],pastW:["canned","coud"],   partW:["canned","coulded"]},
+    {inf:"catch", es:"coger / atrapar",        past:"caught",     part:"caught",
+     esW:["lanzar / tirar","soltar / dejar"],  pastW:["catched","cought"],  partW:["catched","cought"]},
+    {inf:"choose",es:"elegir / escoger",       past:"chose",      part:"chosen",
+     esW:["buscar / encontrar","rechazar / descartar"],pastW:["choosed","chosed"],partW:["choosed","chosed"]},
+    {inf:"come",  es:"venir / llegar",         past:"came",       part:"come",
+     esW:["ir / marchar","salir / partir"],    pastW:["comed","camed"],     partW:["comed","camed"]},
+    {inf:"cost",  es:"costar",                 past:"cost",       part:"cost",
+     esW:["pagar / abonar","valer / merecer"], pastW:["costed","cosed"],    partW:["costed","cosed"]},
+    {inf:"do",    es:"hacer",                  past:"did",        part:"done",
+     esW:["crear / producir","terminar / acabar"],pastW:["doed","deed"],    partW:["doed","donned"]},
+    {inf:"draw",  es:"dibujar",                past:"drew",       part:"drawn",
+     esW:["pintar / colorear","escribir / redactar"],pastW:["drawed","drow"],partW:["drawed","drawned"]},
+    {inf:"dream", es:"soñar",                  past:"dreamt",     part:"dreamt",
+     esW:["imaginar / fantasear","desear / ansiar"],pastW:["dreamed","dreamted"],partW:["dreamed","dreamted"]},
+    {inf:"drink", es:"beber",                  past:"drank",      part:"drunk",
+     esW:["comer / tragar","probar / degustar"],pastW:["drinked","dronk"],  partW:["drinked","dronken"]},
+    {inf:"drive", es:"conducir / manejar",     past:"drove",      part:"driven",
+     esW:["viajar / circular","correr / acelerar"],pastW:["drived","droved"],partW:["drived","droven"]},
+  ]
+},
+{
+  name:"Grupo 3 · Eat → Freeze",
+  verbs:[
+    {inf:"eat",    es:"comer",                 past:"ate",        part:"eaten",
+     esW:["beber / tragar","probar / saborear"],pastW:["eated","ated"],     partW:["eated","aten"]},
+    {inf:"fall",   es:"caer / caerse",          past:"fell",       part:"fallen",
+     esW:["saltar / brincar","bajar / descender"],pastW:["falled","felt"],  partW:["falled","felled"]},
+    {inf:"feed",   es:"alimentar",              past:"fed",        part:"fed",
+     esW:["cuidar / criar","nutrir / sostener"],pastW:["feeded","feedded"], partW:["feeded","feedded"]},
+    {inf:"feel",   es:"sentir / sentirse",      past:"felt",       part:"felt",
+     esW:["tocar / palpar","pensar / creer"],   pastW:["feeled","fell"],    partW:["feeled","fell"]},
+    {inf:"fight",  es:"luchar / pelear",        past:"fought",     part:"fought",
+     esW:["atacar / agredir","defender / proteger"],pastW:["fighted","faught"],partW:["fighted","faught"]},
+    {inf:"find",   es:"encontrar / hallar",     past:"found",      part:"found",
+     esW:["buscar / rastrear","ver / descubrir"],pastW:["finded","fond"],  partW:["finded","foud"]},
+    {inf:"fly",    es:"volar",                  past:"flew",       part:"flown",
+     esW:["flotar / planear","saltar / brincar"],pastW:["flyed","flow"],    partW:["flyed","flewed"]},
+    {inf:"forget", es:"olvidar",                past:"forgot",     part:"forgotten",
+     esW:["recordar / memorizar","perder / extraviar"],pastW:["forgeted","forgoted"],partW:["forgeted","forgotted"]},
+    {inf:"forgive",es:"perdonar",               past:"forgave",    part:"forgiven",
+     esW:["olvidar / ignorar","aceptar / tolerar"],pastW:["forgived","forgivet"],partW:["forgived","forgivened"]},
+    {inf:"freeze", es:"congelar / helarse",     past:"froze",      part:"frozen",
+     esW:["enfriar / refrigerar","solidificar / endurecer"],pastW:["freezed","frosed"],partW:["freezed","frosed"]},
+  ]
+},
+{
+  name:"Grupo 4 · Get → Hold",
+  verbs:[
+    {inf:"get",   es:"obtener / conseguir",    past:"got",        part:"got",
+     esW:["dar / entregar","buscar / encontrar"],pastW:["getted","gat"],    partW:["getted","gat"]},
+    {inf:"give",  es:"dar / entregar",          past:"gave",       part:"given",
+     esW:["recibir / tomar","ofrecer / proponer"],pastW:["gived","gaven"],   partW:["gived","gaven"]},
+    {inf:"go",    es:"ir / irse",               past:"went",       part:"gone",
+     esW:["venir / llegar","salir / partir"],   pastW:["goed","wented"],    partW:["goed","wented"]},
+    {inf:"grow",  es:"crecer / cultivar",       past:"grew",       part:"grown",
+     esW:["aumentar / subir","desarrollar / expandir"],pastW:["growed","grow"],partW:["growed","grewen"]},
+    {inf:"hang",  es:"colgar",                  past:"hung",       part:"hung",
+     esW:["atar / amarrar","fijar / sujetar"],  pastW:["hanged","heng"],    partW:["hanged","heng"]},
+    {inf:"have",  es:"tener / haber",           past:"had",        part:"had",
+     esW:["ser / estar","deber / poder"],       pastW:["haved","haded"],    partW:["haved","haded"]},
+    {inf:"hear",  es:"oír / escuchar",          past:"heard",      part:"heard",
+     esW:["ver / mirar","sentir / notar"],      pastW:["heared","herd"],    partW:["heared","herd"]},
+    {inf:"hide",  es:"esconder / ocultar",      past:"hid",        part:"hidden",
+     esW:["guardar / almacenar","cubrir / tapar"],pastW:["hided","head"],   partW:["hid","hided"]},
+    {inf:"hit",   es:"golpear",                 past:"hit",        part:"hit",
+     esW:["lanzar / arrojar","empujar / chocar"],pastW:["hitted","hat"],    partW:["hitted","hat"]},
+    {inf:"hold",  es:"agarrar / sostener",      past:"held",       part:"held",
+     esW:["coger / tomar","llevar / cargar"],   pastW:["holded","hold"],    partW:["holded","hold"]},
+  ]
+},
+{
+  name:"Grupo 5 · Hurt → Make",
+  verbs:[
+    {inf:"hurt",  es:"herir / doler",           past:"hurt",       part:"hurt",
+     esW:["golpear / pegar","dañar / estropear"],pastW:["hurted","hert"],   partW:["hurted","hert"]},
+    {inf:"keep",  es:"guardar / conservar",     past:"kept",       part:"kept",
+     esW:["tener / poseer","salvar / proteger"],pastW:["keeped","keped"],   partW:["keeped","keped"]},
+    {inf:"know",  es:"saber / conocer",         past:"knew",       part:"known",
+     esW:["entender / comprender","aprender / estudiar"],pastW:["knowed","know"],partW:["knowed","knewn"]},
+    {inf:"lead",  es:"liderar / dirigir",       past:"led",        part:"led",
+     esW:["seguir / acompañar","guiar / orientar"],pastW:["leaded","leed"], partW:["leaded","leed"]},
+    {inf:"learn", es:"aprender",                past:"learnt",     part:"learnt",
+     esW:["estudiar / memorizar","enseñar / explicar"],pastW:["learned","lernt"],partW:["learned","lernt"]},
+    {inf:"leave", es:"salir / dejar",           past:"left",       part:"left",
+     esW:["llegar / entrar","quedarse / permanecer"],pastW:["leaved","lefted"],partW:["leaved","lefted"]},
+    {inf:"lend",  es:"prestar",                 past:"lent",       part:"lent",
+     esW:["pedir prestado / tomar","dar / entregar"],pastW:["lended","lendt"],partW:["lended","lendt"]},
+    {inf:"let",   es:"permitir / dejar",        past:"let",        part:"let",
+     esW:["obligar / forzar","impedir / prohibir"],pastW:["letted","leted"],partW:["letted","leted"]},
+    {inf:"lie",   es:"echarse / tumbarse",      past:"lay",        part:"lain",
+     esW:["sentarse / agacharse","levantarse / incorporarse"],pastW:["lied","laid"],partW:["lied","layed"]},
+    {inf:"lose",  es:"perder",                  past:"lost",       part:"lost",
+     esW:["olvidar / extraviar","fallar / errar"],pastW:["losed","losted"], partW:["losed","losted"]},
+    {inf:"make",  es:"hacer / fabricar",        past:"made",       part:"made",
+     esW:["crear / diseñar","construir / montar"],pastW:["maked","maded"],  partW:["maked","maded"]},
+  ]
+},
+{
+  name:"Grupo 6 · Meet → Send",
+  verbs:[
+    {inf:"meet",  es:"conocer / encontrarse",   past:"met",        part:"met",
+     esW:["ver / observar","visitar / ir a ver"],pastW:["meeted","meted"],  partW:["meeted","meted"]},
+    {inf:"pay",   es:"pagar",                   past:"paid",       part:"paid",
+     esW:["cobrar / facturar","deber / adeudar"],pastW:["payed","paied"],   partW:["payed","paied"]},
+    {inf:"put",   es:"poner / colocar",         past:"put",        part:"put",
+     esW:["quitar / retirar","llevar / mover"],  pastW:["putted","puted"],  partW:["putted","puted"]},
+    {inf:"read",  es:"leer",                    past:"read",       part:"read",
+     esW:["escribir / redactar","estudiar / repasar"],pastW:["readed","red"],partW:["readed","red"]},
+    {inf:"ride",  es:"montar / ir en",          past:"rode",       part:"ridden",
+     esW:["conducir / manejar","viajar / circular"],pastW:["rided","road"], partW:["rided","roded"]},
+    {inf:"ring",  es:"sonar / llamar",          past:"rang",       part:"rung",
+     esW:["tocar / pulsar","vibrar / timbrar"],  pastW:["ringed","ranged"],   partW:["ringed","ranged"]},
+    {inf:"run",   es:"correr",                  past:"ran",        part:"run",
+     esW:["caminar / andar","saltar / brincar"], pastW:["runned","ranned"], partW:["runned","ranned"]},
+    {inf:"say",   es:"decir",                   past:"said",       part:"said",
+     esW:["hablar / comentar","contar / narrar"],pastW:["sayed","sed"],     partW:["sayed","sed"]},
+    {inf:"see",   es:"ver",                     past:"saw",        part:"seen",
+     esW:["mirar / observar","notar / percibir"],pastW:["seed","sawed"],    partW:["seed","sawed"]},
+    {inf:"sell",  es:"vender",                  past:"sold",       part:"sold",
+     esW:["comprar / adquirir","cobrar / facturar"],pastW:["selled","solled"],partW:["selled","solled"]},
+    {inf:"send",  es:"enviar / mandar",         past:"sent",       part:"sent",
+     esW:["recibir / obtener","llevar / traer"], pastW:["sended","sendt"],  partW:["sended","sendt"]},
+  ]
+},
+{
+  name:"Grupo 7 · Set → Stand",
+  verbs:[
+    {inf:"set",   es:"poner / colocar",         past:"set",        part:"set",
+     esW:["meter / llenar","quitar / borrar"],   pastW:["setted","seted"],     partW:["setten","setting"]},
+    {inf:"shake", es:"agitar / sacudir",         past:"shook",      part:"shaken",
+     esW:["acariciar / frotar","romper / partir"],pastW:["shaked","shuck"],  partW:["shook","shoken"]},
+    {inf:"shine", es:"brillar / lustrar",        past:"shone",      part:"shone",
+     esW:["soplar / arder","cubrir / tapar"],    pastW:["shined","sheen"],   partW:["shined","shinen"]},
+    {inf:"show",  es:"mostrar / enseñar",        past:"showed",     part:"shown",
+     esW:["esconder / tapar","buscar / encontrar"],pastW:["shew","showned"], partW:["showned","showed"]},
+    {inf:"shut",  es:"cerrar / apagar",          past:"shut",       part:"shut",
+     esW:["abrir / encender","romper / golpear"],pastW:["shutted","shuted"], partW:["shutten","shutted"]},
+    {inf:"sing",  es:"cantar",                   past:"sang",       part:"sung",
+     esW:["sonar / resonar","hablar / decir"],   pastW:["singed","sung"],    partW:["sang","singed"]},
+    {inf:"sit",   es:"sentarse",                 past:"sat",        part:"sat",
+     esW:["levantarse","tumbarse"],              pastW:["sitted","sit"],     partW:["sitten","sitted"]},
+    {inf:"sleep", es:"dormir",                   past:"slept",      part:"slept",
+     esW:["descansar / relajarse","soñar / imaginar"],pastW:["sleeped","sloped"],partW:["sleeped","slopen"]},
+    {inf:"speed", es:"acelerar / ir rápido",     past:"sped",       part:"sped",
+     esW:["parar / frenar","volar / flotar"],    pastW:["speeded","speded"], partW:["speeden","speeded"]},
+    {inf:"spell", es:"deletrear",                past:"spelt",      part:"spelt",
+     esW:["escribir / redactar","leer / pronunciar"],pastW:["spelled","spilled"],partW:["spellen","spelled"]},
+    {inf:"spend", es:"gastar / pasar tiempo",    past:"spent",      part:"spent",
+     esW:["ahorrar / guardar","pedir / cobrar"], pastW:["spended","spand"],  partW:["spended","spenten"]},
+    {inf:"stand", es:"estar de pie / aguantar",  past:"stood",      part:"stood",
+     esW:["sentarse / agacharse","correr / caminar"],pastW:["standed","stoud"],partW:["standen","standed"]},
+    {inf:"steal", es:"robar",                   past:"stole",      part:"stolen",
+     esW:["esconder / ocultar","coger / tomar"],pastW:["stealed","stoled"],  partW:["stealed","stoled"]},
+    {inf:"swim",  es:"nadar",                   past:"swam",       part:"swum",
+     esW:["flotar / bucear","chapotear / mojarse"],pastW:["swimmed","swammed"], partW:["swimmed","swammed"]},
+  ]
+},
+{
+  name:"Grupo 8 · Take → Write",
+  verbs:[
+    {inf:"take",  es:"tomar / coger",            past:"took",       part:"taken",
+     esW:["dar / entregar","llevar / traer"],    pastW:["taked","toke"],     partW:["taked","token"]},
+    {inf:"teach", es:"enseñar / dar clases",     past:"taught",     part:"taught",
+     esW:["aprender / estudiar","explicar / mostrar"],pastW:["teached","tought"],partW:["teached","tought"]},
+    {inf:"tell",  es:"decir / contar",           past:"told",       part:"told",
+     esW:["hablar / comentar","preguntar / pedir"],pastW:["telled","tolled"],partW:["telled","tolled"]},
+    {inf:"think", es:"pensar / creer",           past:"thought",    part:"thought",
+     esW:["saber / conocer","imaginar / fantasear"],pastW:["thinked","thinkt"],partW:["thinked","thinkt"]},
+    {inf:"throw", es:"lanzar / tirar",           past:"threw",      part:"thrown",
+     esW:["coger / atrapar","empujar / arrojar"],pastW:["throwed","throw"],  partW:["throwed","threwen"]},
+    {inf:"understand",es:"entender / comprender",past:"understood", part:"understood",
+     esW:["saber / conocer","aprender / estudiar"],pastW:["understanded","understandted"],partW:["understanded","understandted"]},
+    {inf:"wake",  es:"despertar / despertarse",  past:"woke",       part:"woken",
+     esW:["dormir / adormecerse","levantarse / incorporarse"],pastW:["waked","wocked"],partW:["waked","wocked"]},
+    {inf:"wear",  es:"llevar puesto / vestir",   past:"wore",       part:"worn",
+     esW:["vestirse / ponerse","calzar / usar"], pastW:["weared","wored"],   partW:["weared","wored"]},
+    {inf:"win",   es:"ganar",                    past:"won",        part:"won",
+     esW:["perder / fallar","empatar / igualar"],pastW:["winned","wan"],     partW:["winned","wan"]},
+    {inf:"write", es:"escribir",                 past:"wrote",      part:"written",
+     esW:["leer / redactar","dibujar / trazar"], pastW:["writed","wroted"],  partW:["writed","wroted"]},
+  ]
+},
+];
+
+const QCFG=[
+  {key:'es',  wKey:'esW',  icon:'?',cls:'m',title:'¿Qué significa?',        sub:'Traducción al español'},
+  {key:'past',wKey:'pastW',icon:'1',cls:'p',title:'¿Cuál es el pasado?',    sub:'Past simple — ej: go → went'},
+  {key:'part',wKey:'partW',icon:'2',cls:'r',title:'¿Cuál es el participio?',sub:'Past participle — ej: go → gone'},
+];
+const L=['A','B','C'];
+const sf=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;};
+
+// ── state ──
+let selectedGroups=new Set();   // indices of selected groups
+let groupMode={};               // i -> 'complete' | 'random'  (default 'complete')
+let currentLevel=1;
+let selectedCount=-1;           // -1 = all random
+let queue=[],vi=0,cv=null,cvGroup='',score=0,nOk=0,nBad=0,vResults=[];
+let qSt=[],giftIdx=-1;
+
+// ── init group list ──
+function initGroups(){
+  const list=document.getElementById('groupList');
+  GROUPS.forEach((g,i)=>{
+    const card=document.createElement('div');
+    card.className='group-card';card.id='gc'+i;
+    card.innerHTML=`
+      <div class="gc-top">
+        <div class="gc-check" id="chk${i}"></div>
+        <div class="gc-info">
+          <div class="gc-name">${g.name}</div>
+          <div class="gc-verbs">${g.verbs.map(v=>v.inf).join(' · ')}</div>
+        </div>
+        <div class="gc-count">${g.verbs.length} verbos</div>
+      </div>
+      <div class="gc-toggle" id="tog${i}">
+        <button class="toggle-btn active-complete" id="tbC${i}" onclick="setMode(event,${i},'complete')">✅ Completo</button>
+        <button class="toggle-btn" id="tbR${i}" onclick="setMode(event,${i},'random')">🎲 Aleatorio</button>
+      </div>
+    `;
+    card.querySelector('.gc-top').onclick=()=>toggleGroup(i);
+    list.appendChild(card);
+    groupMode[i]='complete';
+  });
+}
+
+function toggleGroup(i){
+  if(selectedGroups.has(i)){selectedGroups.delete(i);}
+  else{selectedGroups.add(i);}
+  document.getElementById('gc'+i).classList.toggle('selected',selectedGroups.has(i));
+  document.getElementById('chk'+i).textContent=selectedGroups.has(i)?'✓':'';
+  updateSelSummary();
+}
+
+function setMode(e,i,mode){
+  e.stopPropagation();
+  groupMode[i]=mode;
+  document.getElementById('tbC'+i).className='toggle-btn'+(mode==='complete'?' active-complete':'');
+  document.getElementById('tbR'+i).className='toggle-btn'+(mode==='random'?' active-random':'');
+  updateSelSummary();
+}
+
+let allSelected=false;
+function toggleAll(){
+  allSelected=!allSelected;
+  GROUPS.forEach((_,i)=>{
+    if(allSelected)selectedGroups.add(i);else selectedGroups.delete(i);
+    document.getElementById('gc'+i).classList.toggle('selected',allSelected);
+    document.getElementById('chk'+i).textContent=allSelected?'✓':'';
+  });
+  document.querySelector('.sel-all-btn').textContent=allSelected?'Deseleccionar todos':'Seleccionar todos';
+  updateSelSummary();
+}
+
+function updateSelSummary(){
+  const n=selectedGroups.size;
+  const btn=document.getElementById('continueBtn');
+  if(n===0){
+    document.getElementById('selSummary').textContent='Ningún grupo seleccionado';
+    btn.disabled=true;return;
+  }
+  const completeTotal=[...selectedGroups].filter(i=>groupMode[i]==='complete').reduce((s,i)=>s+GROUPS[i].verbs.length,0);
+  const randomTotal=[...selectedGroups].filter(i=>groupMode[i]==='random').reduce((s,i)=>s+GROUPS[i].verbs.length,0);
+  let summary='';
+  if(completeTotal>0)summary+=`${completeTotal} completo${completeTotal>1?'s':''}`;
+  if(randomTotal>0)summary+=(summary?' · ':'')+`${randomTotal} aleatorio${randomTotal>1?'s':''}`;
+  document.getElementById('selSummary').textContent=summary;
+  btn.disabled=false;
+}
+
+function goToLevel(){
+  // count random verbs available
+  const randomTotal=[...selectedGroups].filter(i=>groupMode[i]==='random').reduce((s,i)=>s+GROUPS[i].verbs.length,0);
+  // if no random groups or randomTotal <= 15, skip count screen
+  if(randomTotal===0||randomTotal<=15){
+    selectedCount=-1;
+    showScreen('screenLevel');return;
+  }
+  buildCountScreen(randomTotal);
+  showScreen('screenCount');
+}
+
+function buildCountScreen(randomTotal){
+  const completeTotal=[...selectedGroups].filter(i=>groupMode[i]==='complete').reduce((s,i)=>s+GROUPS[i].verbs.length,0);
+  const subtitle=completeTotal>0
+    ?`${randomTotal} verbos aleatorios + ${completeTotal} completos`
+    :`${randomTotal} verbos aleatorios disponibles`;
+  document.getElementById('countSubtitle').textContent=subtitle;
+  const cards=document.getElementById('countCards');
+  cards.innerHTML='';
+  [15,30,45,60].filter(n=>n<randomTotal).forEach(n=>{
+    const total=n+completeTotal;
+    cards.appendChild(makeCountCard(
+      `${n} aleatorios${completeTotal>0?` + ${completeTotal} completos`:''}`,
+      `Total de la sesión: ${total} verbos`,
+      ()=>{selectedCount=n;showScreen('screenLevel');}
+    ));
+  });
+  const allTotal=randomTotal+completeTotal;
+  cards.appendChild(makeCountCard(
+    `Todos (${allTotal})`,
+    `${randomTotal} aleatorios${completeTotal>0?` + ${completeTotal} completos`:''}`,
+    ()=>{selectedCount=-1;showScreen('screenLevel');}
+  ));
+}
+
+function makeCountCard(title,desc,fn){
+  const d=document.createElement('div');
+  d.className='lv-card';d.style.cursor='pointer';
+  d.innerHTML=`
+    <span class="lv-emoji">📚</span>
+    <div class="lv-text">
+      <div class="lv-name" style="color:var(--blue)">${title}</div>
+      <div class="lv-desc">${desc}</div>
+    </div>
+  `;
+  d.onclick=fn;return d;
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame(lv){
+  currentLevel=lv;
+  // separate complete and random verbs
+  let completeVerbs=[],randomVerbs=[];
+  [...selectedGroups].sort().forEach(i=>{
+    const tagged=GROUPS[i].verbs.map(v=>({...v,group:GROUPS[i].name}));
+    if(groupMode[i]==='complete') completeVerbs.push(...tagged);
+    else randomVerbs.push(...tagged);
+  });
+  // shuffle random pool then slice
+  const shuffledRandom=sf(randomVerbs);
+  const pickedRandom=selectedCount>0?shuffledRandom.slice(0,selectedCount):shuffledRandom;
+  // final queue: picked random + all complete, then shuffle together
+  queue=sf([...pickedRandom,...completeVerbs]);
+  vi=0;score=0;nOk=0;nBad=0;vResults=[];
+  document.getElementById('scoreDisplay').textContent=0;
+  const labels=['','Nivel 1 · Test','Nivel 2 · Pistas','Nivel 3 · Sin ayuda'];
+  const pclasses=['','lp-1','lp-2','lp-3'];
+  document.getElementById('gameBadge').textContent=labels[lv];
+  const pill=document.getElementById('levelPill');
+  pill.textContent=labels[lv];pill.className='level-pill '+pclasses[lv];
+  showScreen('screenGame');
+  loadVerb();
+}
+
+function loadVerb(){
+  if(vi>=queue.length){showResults();return;}
+  cv=queue[vi];cvGroup=cv.group||'';
+  giftIdx=(currentLevel===2)?Math.floor(Math.random()*3):-1;
+  qSt=QCFG.map((_,i)=>({done:i===giftIdx&&currentLevel===2,passed:i===giftIdx&&currentLevel===2,gift:i===giftIdx&&currentLevel===2,wrongs:0,firstWrong:'',choices:null}));
+  document.getElementById('verbWord').textContent=cv.inf.toUpperCase();
+  document.getElementById('verbNum').textContent=`Verbo ${vi+1} de ${queue.length}`;
+  document.getElementById('nextBtn').classList.remove('show');
+  document.getElementById('nextBtn').textContent=vi+1<queue.length?'Siguiente verbo →':'Ver resultados →';
+  // pills
+  QCFG.forEach((_,i)=>{
+    const gift=i===giftIdx&&currentLevel===2;
+    document.getElementById('sp'+i).className='sp'+(gift?' s-gift':i===0&&!qSt[0].done?' active':i===0&&qSt[0].done?' s-gift':'');
+  });
+  if(giftIdx===0&&currentLevel===2){
+    document.getElementById('sp0').className='sp s-gift';
+    document.getElementById('sp1').className='sp active';
+  }
+  updateProg();buildQ();
+  if(giftIdx===0&&currentLevel===2)unlockNext(-1);
+}
+
+function buildQ(){
+  const area=document.getElementById('qArea');area.innerHTML='';
+  QCFG.forEach((cfg,qi)=>{
+    const qs=qSt[qi];
+    const isGift=qs.gift;
+    const firstPending=qSt.findIndex(q=>!q.done);
+    const locked=!qs.done&&qi!==firstPending;
+    const block=document.createElement('div');
+    block.className='qblock'+(locked?' locked':'');block.id='qb'+qi;
+    block.innerHTML=`
+      <div class="qlabel">
+        <div class="qicon ${cfg.cls}">${isGift?'🎁':cfg.icon}</div>
+        <div class="qtitle">${cfg.title}</div>
+      </div>
+      <div class="qsub">${cfg.sub}</div>
+    `;
+    if(isGift){
+      const gb=document.createElement('div');gb.className='gift-box';
+      gb.innerHTML=`<span style="font-size:1.1rem">🎁</span><div><div class="gift-label">¡Resuelta!</div><div class="gift-value">${cv[cfg.key]}</div></div>`;
+      block.appendChild(gb);
+    } else if(currentLevel===1){
+      const rmDiv=document.createElement('div');rmDiv.className='retry-msg';rmDiv.id='rm'+qi;rmDiv.textContent='⚠️ Incorrecto — último intento';
+      block.appendChild(rmDiv);
+      const opts=document.createElement('div');opts.className='opts';opts.id='opts'+qi;
+      const choices=sf([{val:cv[cfg.key],ok:true},{val:cv[cfg.wKey][0],ok:false},{val:cv[cfg.wKey][1],ok:false}]);
+      qSt[qi].choices=choices;
+      for(var oi=0;oi<choices.length;oi++){
+        (function(qi2,oi2){
+          const b=document.createElement('button');
+          b.className='opt';
+          b.id='o'+qi2+'_'+oi2;
+          b.disabled=locked;
+          b.innerHTML='<span class="opt-ltr">'+L[oi2]+'</span><span>'+choices[oi2].val+'</span>';
+          b.onclick=function(){pickTest(qi2,oi2);};
+          opts.appendChild(b);
+        })(qi,oi);
+      }
+      block.appendChild(opts);
+    } else {
+      const correct=cv[cfg.key];
+      const hint=currentLevel===2?makeHint(correct):'';
+      const fillRow=document.createElement('div');fillRow.className='fill-row';
+      const wrap=document.createElement('div');wrap.className='fill-input-wrap';
+      const inp=document.createElement('input');
+      inp.type='text';inp.className='fill-input';inp.id='inp'+qi;
+      inp.placeholder=hint||'escribe aquí';
+      inp.disabled=locked;inp.autocomplete='off';inp.autocorrect='off';inp.spellcheck=false;
+      inp.setAttribute('data-correct', correct);
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkFill(qi);});
+      wrap.appendChild(inp);
+      const btn=document.createElement('button');btn.className='check-btn';btn.id='ckb'+qi;btn.textContent='✓';btn.disabled=locked;
+      btn.onclick=()=>checkFill(qi);wrap.appendChild(btn);
+      // mic button — only if SpeechRecognition supported
+      if(window.SpeechRecognition||window.webkitSpeechRecognition){
+        const mic=document.createElement('button');
+        mic.className='mic-btn';mic.id='mic'+qi;mic.disabled=locked;
+        mic.innerHTML='🎤';mic.title='Hablar';
+        mic.onclick=function(){startMic(qi);};
+        wrap.appendChild(mic);
+      }
+      fillRow.appendChild(wrap);
+      const fb=document.createElement('div');fb.className='inp-feedback';fb.id='fb'+qi;
+      fillRow.appendChild(fb);block.appendChild(fillRow);
+    }
+    if(qi<2){const d=document.createElement('div');d.className='qdiv';block.appendChild(d);}
+    area.appendChild(block);
+  });
+}
+
+function makeHint(str){
+  const parts=str.split(' ');
+  const hint=parts.map(w=>{
+    const clean=w.replace(/[^a-zA-ZáéíóúñÁÉÍÓÚÑ]/g,'');
+    if(clean.length<=4)return w;
+    return clean.slice(0,3)+'…'+w.slice(w.indexOf(clean)+clean.length);
+  }).join(' ');
+  if(normalize(hint)===normalize(str))return '…';
+  return hint;
+}
+
+function normalize(s){
+  // Manual accent removal for iOS Safari compatibility (avoid String.prototype.normalize)
+  return s.trim().toLowerCase()
+    .replace(/[áàäâã]/g,'a').replace(/[éèëê]/g,'e')
+    .replace(/[íìïî]/g,'i').replace(/[óòöôõ]/g,'o')
+    .replace(/[úùüû]/g,'u').replace(/ñ/g,'n').replace(/ç/g,'c')
+    .replace(/[^a-z0-9]/g,'');
+}
+
+function isCorrect(input,correct){
+  const v=normalize(input);if(!v)return false;
+  if(v===normalize(correct))return true;
+  return correct.split('/').map(p=>normalize(p)).filter(p=>p.length>=4).some(p=>v===p);
+}
+
+function pickTest(qi,oi){
+  const qs=qSt[qi];
+  if(!qs||qs.done)return;
+  const choices=qs.choices;
+  if(!choices||oi>=choices.length)return;
+  const isOk=choices[oi].ok;
+  const btn=document.getElementById('o'+qi+'_'+oi);
+  if(!btn)return;
+  const all=document.querySelectorAll('#opts'+qi+' .opt');
+  const card=document.querySelector('.verb-card');
+  if(isOk){
+    qs.done=true;
+    qs.passed=(qs.wrongs===0);
+    nOk++;
+    score+=(qs.wrongs===0)?10:5;
+    document.getElementById('scoreDisplay').textContent=score;
+    btn.classList.add('ok-opt');
+    for(var i=0;i<all.length;i++){
+      all[i].disabled=true;
+      if(all[i]!==btn)all[i].classList.add('dim');
+    }
+    var rm=document.getElementById('rm'+qi);
+    if(rm)rm.classList.remove('show');
+    setPill(qi,'s-ok');
+    card.classList.add('pop');
+    setTimeout(function(){card.classList.remove('pop');},250);
+    spawnStar();
+    unlockNext(qi);
+    checkDone();
+  } else {
+    if(!qs.firstWrong){
+      nBad++;
+      qs.firstWrong=choices[oi].val||'?';
+    }
+    qs.wrongs++;
+    btn.classList.add('bad-opt');
+    btn.disabled=true;
+    card.classList.add('shake');
+    setTimeout(function(){card.classList.remove('shake');},300);
+    if(qs.wrongs>=2){
+      qs.done=true;
+      qs.passed=false;
+      for(var i=0;i<all.length;i++){all[i].disabled=true;}
+      var rm=document.getElementById('rm'+qi);
+      if(rm)rm.classList.remove('show');
+      setPill(qi,'s-bad');
+      unlockNext(qi);
+      checkDone();
+    } else {
+      var rm=document.getElementById('rm'+qi);
+      if(rm)rm.classList.add('show');
+    }
+  }
+}
+
+function checkFill(qi){
+  const qs=qSt[qi];if(qs.done)return;
+  const inp=document.getElementById('inp'+qi);
+  const fb=document.getElementById('fb'+qi);
+  const correct=inp.getAttribute('data-correct');
+  const card=document.querySelector('.verb-card');
+  if(!inp.value.trim()){inp.focus();return;}
+  const val=inp.value.trim();
+  if(isCorrect(val,correct)){
+    qs.done=true;qs.passed=(qs.wrongs===0);
+    nOk++;score+=(qs.wrongs===0)?10:5;
+    document.getElementById('scoreDisplay').textContent=score;
+    inp.classList.add('inp-ok');inp.disabled=true;
+    document.getElementById('ckb'+qi).disabled=true;
+    fb.textContent='✓ Correcto';fb.className='inp-feedback fb-ok show';
+    setPill(qi,'s-ok');card.classList.add('pop');setTimeout(()=>card.classList.remove('pop'),250);
+    spawnStar();unlockNext(qi);checkDone();
+  } else {
+    if(!qs.firstWrong){nBad++;qs.firstWrong=val;}qs.wrongs++;
+    inp.classList.add('inp-bad');
+    card.classList.add('shake');setTimeout(()=>card.classList.remove('shake'),300);
+    if(qs.wrongs>=2){
+      qs.done=true;qs.passed=false;inp.disabled=true;
+      document.getElementById('ckb'+qi).disabled=true;
+      fb.textContent=`✗ Era: ${correct}`;fb.className='inp-feedback fb-bad show';
+      setPill(qi,'s-bad');setTimeout(()=>{unlockNext(qi);checkDone();},400);
+    } else {
+      fb.textContent='✗ Incorrecto — inténtalo de nuevo';fb.className='inp-feedback fb-bad show';
+      setTimeout(()=>{inp.classList.remove('inp-bad');fb.className='inp-feedback';inp.value='';inp.focus();},700);
+    }
+  }
+}
+
+function setPill(qi,cls){document.getElementById('sp'+qi).className='sp '+cls;}
+
+function unlockNext(qi){
+  const ni=qi+1;if(ni>2)return;
+  const block=document.getElementById('qb'+ni);if(!block)return;
+  block.classList.remove('locked');
+  if(currentLevel===1){document.querySelectorAll('#opts'+ni+' .opt').forEach(function(b){b.disabled=false;});}
+  else if(!qSt[ni].gift){
+    const inp=document.getElementById('inp'+ni);const btn=document.getElementById('ckb'+ni);
+    const mic=document.getElementById('mic'+ni);
+    if(inp)inp.disabled=false;if(btn)btn.disabled=false;if(mic)mic.disabled=false;
+  }
+  document.getElementById('sp'+ni).className='sp'+(qSt[ni].gift?' s-gift':' active');
+  setTimeout(()=>block.scrollIntoView(false),120);
+  if(qSt[ni].gift)setTimeout(()=>unlockNext(ni),150);
+}
+
+function checkDone(){
+  if(!qSt.every(q=>q.done))return;
+  document.getElementById('nextBtn').classList.add('show');
+  setTimeout(()=>document.getElementById('nextBtn').scrollIntoView(false),180);
+}
+
+function nextVerb(){
+  vResults.push({inf:cv.inf,group:cvGroup,correct:[cv.es,cv.past,cv.part],ok:qSt.map(q=>q.passed),gift:qSt.map(q=>q.gift)});
+  vi++;document.getElementById('qArea').scrollTop=0;loadVerb();
+}
+
+function skipVerb(){
+  // mark all unfinished questions as failed
+  qSt.forEach(qs=>{if(!qs.done){qs.done=true;qs.passed=false;}});
+  vResults.push({inf:cv.inf,group:cvGroup,correct:[cv.es,cv.past,cv.part],ok:[false,false,false],gift:qSt.map(q=>q.gift)});
+  vi++;document.getElementById('qArea').scrollTop=0;loadVerb();
+}
+
+function updateProg(){
+  document.getElementById('progFill').style.width=(vi/queue.length*100)+'%';
+  document.getElementById('progLbl').textContent=`${vi} / ${queue.length}`;
+}
+
+function showResults(){
+  const tot=nOk+nBad,pct=tot>0?Math.round(nOk/tot*100):0;
+  document.getElementById('trophy').textContent=pct>=90?'🏆':pct>=70?'🎉':pct>=50?'👏':'💪';
+  document.getElementById('resTitle').textContent=pct>=80?'¡Excelente trabajo!':pct>=50?'¡Buen intento!':'¡Sigue practicando!';
+  document.getElementById('resSub').textContent=`${pct}% de aciertos · ${score} puntos`;
+  document.getElementById('rcOk').textContent=nOk;
+  document.getElementById('rcBad').textContent=nBad;
+  document.getElementById('rcPts').textContent=score;
+
+  let lastGroup='';
+  document.getElementById('sumBody').innerHTML=vResults.map(r=>{
+    const c=(v,ok,gift)=>gift?`<td class="s-gift">🎁 ${v}</td>`:`<td class="${ok?'s-ok':'s-bad'}">${ok?'✓':'✗'} ${v}</td>`;
+    let groupRow='';
+    if(r.group!==lastGroup){
+      lastGroup=r.group;
+      groupRow=`<tr style="background:#f0ebe0"><td colspan="4" style="padding:4px 8px;"><span class="sg">${r.group}</span></td></tr>`;
+    }
+    return groupRow+`<tr><td class="sv">${r.inf}</td>${c(r.correct[0],r.ok[0],r.gift[0])}${c(r.correct[1],r.ok[1],r.gift[1])}${c(r.correct[2],r.ok[2],r.gift[2])}</tr>`;
+  }).join('');
+
+  showScreen('screenResult');
+  if(pct>=60)for(let i=0;i<12;i++)setTimeout(()=>spawnStar(true),i*70);
+}
+
+// ── SPEECH RECOGNITION ──
+var activeRecognition=null;
+
+function startMic(qi){
+  const qs=qSt[qi];
+  if(!qs||qs.done)return;
+  const inp=document.getElementById('inp'+qi);
+  const mic=document.getElementById('mic'+qi);
+  if(!inp||!mic)return;
+  if(activeRecognition){
+    activeRecognition.stop();
+    activeRecognition=null;
+    mic.classList.remove('mic-active');
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return;
+  const r=new SR();
+  r.lang='es-ES';
+  r.interimResults=false;
+  r.maxAlternatives=1;
+  activeRecognition=r;
+  mic.classList.add('mic-active');
+  r.onresult=function(e){
+    inp.value=e.results[0][0].transcript;
+    mic.classList.remove('mic-active');
+    activeRecognition=null;
+    setTimeout(function(){checkFill(qi);},300);
+  };
+  r.onerror=function(){mic.classList.remove('mic-active');activeRecognition=null;};
+  r.onend=function(){mic.classList.remove('mic-active');activeRecognition=null;};
+  r.start();
+}
+
+function spawnStar(b=false){
+  const e=['⭐','✨','🎯','🌟','🎊'],d=document.createElement('div');
+  d.className='deco';d.textContent=e[0|Math.random()*e.length];
+  d.style.left=(5+Math.random()*90)+'%';d.style.top=(b?(5+Math.random()*60):20)+'%';
+  d.style.animationDuration=(.55+Math.random()*.45)+'s';
+  document.body.appendChild(d);setTimeout(()=>d.remove(),1100);
+}
+
+initGroups();
+</script>
+</body>
+</html>
